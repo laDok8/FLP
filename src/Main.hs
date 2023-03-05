@@ -20,7 +20,6 @@ main = do
     withFile "test/test01.in" ReadMode (\handle -> do
             contents <- hGetContents handle
             putStrLn contents
-            solveKnapSack1
             )
     -- delete example
     --its :: [(Int,Int)]
@@ -29,8 +28,8 @@ main = do
     let its2 = [(4,1),(5,2),(1,3)]
     --singleton :: SackM
     let singleton = SackM 0 0 []
-    --solveKnapSack singleton 46 its2
-    putStrLn $ show $ singleton
+    res <- solveKnapSack singleton 42 its2
+    print res
 
 
 
