@@ -2,6 +2,7 @@ module Types
 ( SackM(..)
 , SackItem(..)
 , SackInput(..)
+, sackInsert
 ) where
 
 -- data structure for sack M for minimize
