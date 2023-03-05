@@ -4,8 +4,8 @@ import qualified Data.List as List
 import qualified Data.Map as Map
 import Data.Char
 
-
-
+import Types
+import ParseInput
 
 
 main = do
@@ -16,18 +16,12 @@ main = do
     let bigFirstName = map toUpper firstName
         bigLastName = map toUpper lastName
     putStrLn $ "hey " ++ bigFirstName ++ " " ++ bigLastName ++ ", how are you?"
+    putStrLn $ getInput "proj1/test/test01.in"
 
 
 
 
--- data structure for sack
-data Sack = Sack { c :: Int, w:: Int, items :: [Int] } deriving (Eq, Show, Ord)
 
--- 0,0 empty insert
-sackInsert :: Sack -> Int -> Int -> Sack
-sackInsert (Sack w c items) w' c'
-    | all (>=0) [w',c'] = Sack (w+w') (c+c') (items ++ [1])
-    | otherwise = Sack w c (items ++ [0])
 
 its :: [(Int,Int)]
 its = [(10,60),(20,100),(30,120)]
