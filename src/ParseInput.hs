@@ -1,16 +1,14 @@
 module ParseInput
- ( getInput
+ ( getKnapsackProblem
  ) where
 
 import Types
 import Text.Parsec
 
---eol :: Parsec String () Char
 eol = do
     char '\n'
     spaces
 
--- Parsec parsers for the data types
 knapsackParser :: Parsec String () SackInput
 knapsackParser = do
   string "Knapsack {"
@@ -25,15 +23,14 @@ knapsackParser = do
 
 itemParser :: Parsec String () SackItem
 itemParser = do
-  spaces
-  string "Item {"
-  eol
-  weight <- parseWeight
-  cost <- parseCost
-  string "}"
-  return (SackItem weight 1)
+    string "Item {"
+    weight <- parseWeight
+    cost <- parseCost
+    eol
+    string "}"
+    eol
+    return (SackItem weight cost)
 
--- Helper parsers for parsing individual fields
 parseMaxWeight :: Parsec String () Int
 parseMaxWeight = do
   string "maxWeight:"
@@ -52,29 +49,29 @@ parseMinCost = do
 
 parseWeight :: Parsec String () Int
 parseWeight = do
-  spaces
+  eol
   string "weight:"
   spaces
   number <- many1 digit
-  spaces
   return (read number)
 
 parseCost :: Parsec String () Int
 parseCost = do
+  eol
   string "cost:"
   spaces
   number <- many1 digit
-  spaces
   return (read number)
 
--- Parsec parser for the items list
+parseItems :: Parsec String () [SackItem]
 parseItems = do
   string "items: ["
-  items <- itemParser `sepBy` (char '\n' >> spaces)
+  eol
+  items <- many $ itemParser
   string "]"
   return items
 
--- Parsec parser for the entire input
+-- interface
 getKnapsackProblem :: String -> SackInput
 getKnapsackProblem input = case parse knapsackParser "" input of
   Left err -> error (show err)

@@ -20,15 +20,3 @@ items: [
     }
 ]
 }
-[\n    Item {\n    weight: 36\n    cost: 3\n    }\n      Item {\n    weight: 36\n    cost: 3\n    }\n]
-[\n    Item {\n    weight: 36\n    cost: 3\n    }\n]
-
-parseTest (knapsackParser <* eof) "Knapsack {\nmaxWeight: 46\nminCost: 324\nitems: [\n    Item {\n    weight: 36\n    cost: 3\n    }\n]\n}\n"
-parseTest (knapsackParser <* eof)  "Knapsack {\nmaxWeight: 46\nminCost: 324\nitems: [\n    Item {\n    weight: 36\n    cost: 3\n    }\n      Item {\n    weight: 36\n    cost: 3\n    }\n]\n}\n"
-
-
-Knapsack {\nmaxWeight: 46\nminCost: 324\nitems: [\n    Item {\n    weight: 36\n    cost: 3\n    }\n      Item {\n    weight: 36\n    cost: 3\n    }\n]\n}\n
-
-
-
-Knapsack {\nmaxWeight: 46\nminCost: 324\nitems: [\nItem {\nweight: 36\ncost: 3\n}\n Item {\nweight: 43\ncost: 1129\n}\nItem {\nweight: 202\ncost: 94\n}\nItem {\nweight: 149\ncost: 2084\n}\n]\n}\n
