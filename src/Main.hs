@@ -31,3 +31,4 @@ main = do
         putStrLn "No option specified"
 
     hClose handle
+-- TODO: add type notations, show and checkfile

@@ -1,19 +1,12 @@
 module Minimize
 ( solveKnapSackBrute
-, fitness
-, createPopulation
 , solveKnapSackGA
-, rouletteWheelSelection
-, mutate
-, evolvePopulation
-, inps
 , evalFunction
 ) where
 
 import qualified Data.Map as Map
 import qualified Data.List as List
 import System.Random
-import Control.Monad (replicateM)
 import Data.Char
 import Types
 
@@ -47,65 +40,73 @@ fitness items genome maxWeight =
   let (totalWeight, totalCost) = foldl (\(w, c) (SackItem w' c', g) -> if g == 1 then (w+w', c+c') else (w, c)) (0, 0) (zip items genome)
   in if totalWeight > maxWeight then 0 else totalCost
 
--- Crossover two parents using single-point crossover
-crossover :: [a] -> [a] -> Int -> [[a]]
-crossover parent1 parent2 gen = let
-        index = fst $ randomR (0, length parent1 - 1) (mkStdGen gen)
-        (c1_left, c1_right) = splitAt index parent1
-        (c2_left, c2_right) = splitAt index parent2
-        in [c1_left ++ c2_right, c2_left ++ c1_right]
 
--- Mutate a genome by flipping a random bit
-mutate :: [Int] -> Int -> [Int]
-mutate genome gen = let
-        index = fst $ randomR (0, length genome - 1) (mkStdGen gen)
-        (before, after) = splitAt index genome
-        mutated = (head after + 1) `mod` 2 : tail after
-    in before ++ mutated
 
 -- Select two genomes from the population using roulette wheel selection
 rouletteWheelSelection :: [([Int], Int)] -> Int -> ([Int], [Int])
-rouletteWheelSelection populationWithFitness gen = let
+rouletteWheelSelection populationWithFitness gen0 = let
     totalFitness = sum $ map snd populationWithFitness
     wheel = scanl (\(_, accFitness) (genome, fitness) -> (genome, accFitness + fitness)) ([], 0) populationWithFitness
-    parent1Index = fst $ randomR (1, totalFitness) (mkStdGen gen)
-    parent2Index = fst $ randomR (1, totalFitness) (mkStdGen $ gen+1)
+    (parent1Index,gen1) = randomR (1, totalFitness) gen0
+    (parent2Index,gen2) = randomR (1, totalFitness) gen1
     parent1 = fst $ head $ dropWhile (\(_, accFitness) -> accFitness < parent1Index) wheel
     parent2 = fst $ head $ dropWhile (\(_, accFitness) -> accFitness < parent2Index) wheel
-    in (parent1, parent2)
+    in (parent1, parent2, gen2)
+
+-- iterate over all bits and mutate them with a given probability
+--mutate ::RandomGen a => [Int] -> Float -> a -> [Int]
+mutate genome mutRate gen0 = let
+    (mutatedGenome, gen2) = foldl (\(g, gen) bit -> let
+        (mutationRate, gen1) = randomR (0, 1) gen
+        in if mutationRate < mutRate then (g ++ [1 - bit], gen1) else (g ++ [bit], gen1)) ([], gen0) genome
+    in (mutatedGenome, gen2)
 
 
--- TODO: iterate
+-- Crossover two parents using single-point crossover
+--crossover ::RandomGen a => [Int] -> [Int] -> Float -> a -> ([Int], [Int], a)
+crossover parent1 parent2 crRate mrRate gen0 = let
+    (crossoverPoint, gen1) = randomR (0, length parent1 - 1) gen0
+    (before, after) = splitAt crossoverPoint parent1
+    (before2, after2) = splitAt crossoverPoint parent2
+    (crossoverRate, gen2) = randomR (0, 1) gen1
+    child1 = before ++ after2
+    child2 = before2 ++ after
+    --mutate
+    (mutatedChildren1, gen3) = mutate child1 mrRate gen2
+    (mutatedChildren2, _) = mutate child2 mrRate gen3
+    in if crossoverRate < crRate then [mutatedChildren1, mutatedChildren2] else [parent1, parent2]
+
+
+--using cur generation as seed
 -- Evolve the population for a given number of generations
---evolvePopulation :: [SackItem] -> Int -> Int -> Int -> Int -> Int -> Int -> [[Int]]
-evolvePopulation items population maxWeight maxGenerations eliteCount crossoverRate mutationRate = let
-    genomeSize = length items
+evolvePopulation :: [SackItem] -> [[Int]] -> Int -> Int -> Int -> Float -> Float -> [[Int]]
+evolvePopulation items population maxWeight generation eliteCount crossoverRate mutationRate = let
     populationWithFitness = map (\g -> (g, fitness items g maxWeight)) population
     sortedPopulation = List.sortBy (\(_, f1) (_, f2) -> compare f2 f1) populationWithFitness
     elite = take eliteCount $ map fst sortedPopulation
-    parents = map (\g -> rouletteWheelSelection sortedPopulation g) [1..length sortedPopulation `div` 2]
-    children = concatMap (\(p1, p2) -> crossover p1 p2 1) parents
-    mutatedChildren = map (\g -> mutate g 2) children
-    newPopulation = elite ++ mutatedChildren
-    in if maxGenerations == 0 then newPopulation else evolvePopulation items newPopulation maxWeight (maxGenerations - 1) eliteCount crossoverRate mutationRate
+    stdGen = generation
+    poolSize = (floor $ fromIntegral ((length population) - eliteCount) / 2) -1
+    parents = map (\g -> rouletteWheelSelection populationWithFitness (mkStdGen g)) [generation..(poolSize+generation)]
+    children = concatMap (\(p1, p2, generator) -> crossover p1 p2 crossoverRate mutationRate generator) parents
+    newPopulation = elite ++ children
+    in if generation == 0 then newPopulation else evolvePopulation items newPopulation maxWeight (generation - 1) eliteCount crossoverRate mutationRate
 
 
--- TODO: iterating doesnt work prolly becase of the randoms
--- TODO: solve exceptions and mincost
 -- The main function
-solveKnapSackGA :: SackInput -> [Int]
+--solveKnapSackGA :: SackInput -> Int -> [Int]
 solveKnapSackGA (SackInput maxWeight minCost items) = let
-    populationSize = 4
-    maxGenerations = 10
+    populationSize = 30 -- must be div 2
+    generations = 100
     elitismRate = 0.1
     crossoverRate = 0.8
     mutationRate = 0.1
-    eliteCount = round $ fromIntegral populationSize * elitismRate
+    eliteCount = floor (elitismRate * fromIntegral populationSize) `div` 2 * 2 --even
     genomeSize = length items
     initialPopulation = createPopulation genomeSize populationSize
-    in head $ evolvePopulation items initialPopulation maxWeight maxGenerations eliteCount crossoverRate mutationRate
+    evolved = evolvePopulation items initialPopulation maxWeight generations eliteCount crossoverRate mutationRate
+    newFitness = map (\g -> (g, fitness items g maxWeight)) evolved
+    (champion,cost) = List.maximumBy (\(_, f1) (_, f2) -> compare f1 f2) newFitness
+    in if cost < minCost then [] else champion
 
---mock usage TODO:delete
-itss = [SackItem 1 1, SackItem 2 2, SackItem 3 3, SackItem 4 4, SackItem 5 5, SackItem 6 6, SackItem 7 7, SackItem 8 8, SackItem 9 9, SackItem 10 10]
-inps = (SackInput 100 0 itss)
-evalFunction its = fitness itss its 1000
+--mock usage
+evalFunction (SackInput maxWeight minCost items) its = fitness items its 1000
