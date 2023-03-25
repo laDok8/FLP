@@ -29,4 +29,4 @@ main = do
         putStrLn "No option specified"
 
     hClose handle
--- TODO: show and checkfile
+-- TODO: checkfile
