@@ -20,6 +20,6 @@ main = do
             putStrLn contents
             let inputSack = getKnapsackProblem contents
             putStrLn $ show inputSack
-            outputSack <- solveKnapSack (SackM 0 0 []) inputSack
-            print outputSack
+            outputSack <- return $ solveKnapSackGA inputSack
+            putStrLn $ show outputSack
             )
