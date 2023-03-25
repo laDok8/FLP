@@ -11,6 +11,7 @@ import Data.Char
 import Types
 
 --brute force solution for reference
+solveKnapSackBrute :: SackInput -> [Int]
 solveKnapSackBrute inps = solveKnapSack inps [] 0
 
 solveKnapSack :: SackInput -> [Int] -> Int -> [Int]
@@ -43,7 +44,7 @@ fitness items genome maxWeight =
 
 
 -- Select two genomes from the population using roulette wheel selection
-rouletteWheelSelection :: [([Int], Int)] -> Int -> ([Int], [Int])
+rouletteWheelSelection :: RandomGen a => [([Int], Int)] -> a -> ([Int], [Int],a)
 rouletteWheelSelection populationWithFitness gen0 = let
     totalFitness = sum $ map snd populationWithFitness
     wheel = scanl (\(_, accFitness) (genome, fitness) -> (genome, accFitness + fitness)) ([], 0) populationWithFitness
@@ -54,7 +55,7 @@ rouletteWheelSelection populationWithFitness gen0 = let
     in (parent1, parent2, gen2)
 
 -- iterate over all bits and mutate them with a given probability
---mutate ::RandomGen a => [Int] -> Float -> a -> [Int]
+mutate ::RandomGen a => [Int] -> Float -> a -> ([Int],a)
 mutate genome mutRate gen0 = let
     (mutatedGenome, gen2) = foldl (\(g, gen) bit -> let
         (mutationRate, gen1) = randomR (0, 1) gen
@@ -63,7 +64,7 @@ mutate genome mutRate gen0 = let
 
 
 -- Crossover two parents using single-point crossover
---crossover ::RandomGen a => [Int] -> [Int] -> Float -> a -> ([Int], [Int], a)
+crossover ::RandomGen a => [Int] -> [Int] -> Float -> Float -> a -> [[Int]]
 crossover parent1 parent2 crRate mrRate gen0 = let
     (crossoverPoint, gen1) = randomR (0, length parent1 - 1) gen0
     (before, after) = splitAt crossoverPoint parent1
@@ -93,7 +94,7 @@ evolvePopulation items population maxWeight generation eliteCount crossoverRate 
 
 
 -- The main function
---solveKnapSackGA :: SackInput -> Int -> [Int]
+solveKnapSackGA :: SackInput -> [Int]
 solveKnapSackGA (SackInput maxWeight minCost items) = let
     populationSize = 30 -- must be div 2
     generations = 100
@@ -109,4 +110,5 @@ solveKnapSackGA (SackInput maxWeight minCost items) = let
     in if cost < minCost then [] else champion
 
 --mock usage
+evalFunction :: SackInput -> [Int] -> Int
 evalFunction (SackInput maxWeight minCost items) its = fitness items its 1000

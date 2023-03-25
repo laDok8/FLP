@@ -1,6 +1,6 @@
 CC=ghc
 TARGET=flp22-fun
-FLAG=#-fwarn-incomplete-patterns -Wall
+FLAG=-fwarn-incomplete-patterns -Wall
 PACK=flp-fun-xdokou14.zip
 
 .PHONY: build run zip clean

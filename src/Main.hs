@@ -1,15 +1,13 @@
 module Main where
 
 import qualified Data.List as List
-import qualified Data.Map as Map
-import Data.Char
 import System.IO
 import System.Environment
 
-import Types
 import ParseInput
 import Minimize
 
+main :: IO ()
 main = do
     args <- getArgs
 
@@ -31,4 +29,4 @@ main = do
         putStrLn "No option specified"
 
     hClose handle
--- TODO: add type notations, show and checkfile
+-- TODO: show and checkfile
