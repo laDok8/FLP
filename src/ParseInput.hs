@@ -5,35 +5,36 @@ module ParseInput
 import Types
 import Text.Parsec
 
+eol :: Parsec String () ()
 eol = do
-    char '\n'
+    _ <- char '\n'
     spaces
 
 knapsackParser :: Parsec String () SackInput
 knapsackParser = do
-  string "Knapsack {"
+  _ <- string "Knapsack {"
   eol
-  maxWeight <- parseMaxWeight
-  minCost <- parseMinCost
+  maximWeight <- parseMaxWeight
+  mCost <- parseMinCost
   items <- parseItems
   eol
-  string "}"
+  _ <- string "}"
   eol
-  return (SackInput maxWeight minCost items)
+  return (SackInput maximWeight mCost items)
 
 itemParser :: Parsec String () SackItem
 itemParser = do
-    string "Item {"
-    weight <- parseWeight
-    cost <- parseCost
+    _ <- string "Item {"
+    w <- parseWeight
+    c <- parseCost
     eol
-    string "}"
+    _ <- string "}"
     eol
-    return (SackItem weight cost)
+    return (SackItem w c)
 
 parseMaxWeight :: Parsec String () Int
 parseMaxWeight = do
-  string "maxWeight:"
+  _ <- string "maxWeight:"
   spaces
   number <- many1 digit
   spaces
@@ -41,7 +42,7 @@ parseMaxWeight = do
 
 parseMinCost :: Parsec String () Int
 parseMinCost = do
-  string "minCost:"
+  _ <- string "minCost:"
   spaces
   number <- many1 digit
   spaces
@@ -50,7 +51,7 @@ parseMinCost = do
 parseWeight :: Parsec String () Int
 parseWeight = do
   eol
-  string "weight:"
+  _ <- string "weight:"
   spaces
   number <- many1 digit
   return (read number)
@@ -58,21 +59,22 @@ parseWeight = do
 parseCost :: Parsec String () Int
 parseCost = do
   eol
-  string "cost:"
+  _ <- string "cost:"
   spaces
   number <- many1 digit
   return (read number)
 
 parseItems :: Parsec String () [SackItem]
 parseItems = do
-  string "items: ["
+  _ <- string "items: ["
   eol
   items <- many $ itemParser
-  string "]"
+  _ <- string "]"
   return items
 
 -- interface
 getKnapsackProblem :: String -> SackInput
 getKnapsackProblem input = case parse knapsackParser "" input of
-  Left err -> error (show err)
+--print only string "fuck" if error no stacktrace
+  Left err -> errorWithoutStackTrace $ "Unable to parse input\nError: " ++ show err
   Right val -> val
