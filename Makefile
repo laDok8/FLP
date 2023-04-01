@@ -16,4 +16,4 @@ zip: Makefile src/* doc/* test/*
 	zip -r $(PACK) $^
 
 clean:
-	rm -f $(PACK).zip $(TARGET) src/*.hi src/*.o
+	rm -f $(PACK) $(TARGET) src/*.hi src/*.o
