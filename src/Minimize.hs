@@ -15,10 +15,10 @@ import System.Random
 import Types
 
 --interface for brute force solution
-solveKnapSackBrute :: SackInput -> [Int]
+solveKnapSackBrute :: SackInput -> Solution
 solveKnapSackBrute inps@(SackInput maxW minC items) = let
     solved = solveKnapSack inps [] 0
-    in if (fitness items solved maxW) < minC then [] else solved
+    in if (fitness items solved maxW) < minC then (Solution []) else (Solution solved)
 
 --brute force solution
 solveKnapSack :: SackInput -> [Int] -> Int -> [Int]
@@ -52,8 +52,10 @@ fitness items genome maximWeight =
 -- Select two genomes from the population using roulette wheel selection
 rouletteWheelSelection :: RandomGen a => [([Int], Int)] -> a -> ([Int], [Int],a)
 rouletteWheelSelection populationWithFitness gen0 = let
-    totalFitness = sum $ map snd populationWithFitness
-    wheel = scanl (\(_, accFitness) (genome, curFitness) -> (genome, accFitness + curFitness)) ([], 0) populationWithFitness
+    --add 1 to avoid zero fitness
+    populationWithFitnessAlt = map (\(g, f) -> (g, f + 1)) populationWithFitness
+    totalFitness = sum $ map snd populationWithFitnessAlt
+    wheel = scanl (\(_, accFitness) (genome, curFitness) -> (genome, accFitness + curFitness)) ([], 0) populationWithFitnessAlt
     (parent1Index,gen1) = randomR (1, totalFitness) gen0
     (parent2Index,gen2) = randomR (1, totalFitness) gen1
     parent1 = fst $ head $ dropWhile (\(_, accFitness) -> accFitness < parent1Index) wheel
@@ -94,11 +96,11 @@ evolvePopulation items population maximWeight generation eliteCount crossoverRat
     parents = map (\g -> rouletteWheelSelection populationWithFitness (mkStdGen g)) [generation..(poolSize+generation)]
     children = concatMap (\(p1, p2, generator) -> crossover p1 p2 crossoverRate mutationRate generator) parents
     newPopulation = elite ++ children
-    in if generation == 0 then newPopulation else evolvePopulation items newPopulation maximWeight (generation - 1) eliteCount crossoverRate mutationRate
+    in if generation == 0 then population else evolvePopulation items newPopulation maximWeight (generation - 1) eliteCount crossoverRate mutationRate
 
 
 -- Main function
-solveKnapSackGA :: SackInput -> [Int]
+solveKnapSackGA :: SackInput -> Solution
 solveKnapSackGA (SackInput maximWeight minimalCost items) = let
     populationSize = 30 -- must be div 2
     generations = 100
@@ -111,4 +113,4 @@ solveKnapSackGA (SackInput maximWeight minimalCost items) = let
     evolved = evolvePopulation items initialPopulation maximWeight generations eliteCount crossoverRate mutationRate
     newFitness = map (\g -> (g, fitness items g maximWeight)) evolved
     (champion,champCost) = List.maximumBy (\(_, f1) (_, f2) -> compare f1 f2) newFitness
-    in if champCost < minimalCost then [] else champion
+    in if champCost < minimalCost then (Solution []) else (Solution champion)

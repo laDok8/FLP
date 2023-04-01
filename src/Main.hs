@@ -37,10 +37,10 @@ main = do
         putStrLn $ show inputSack
     else if "-b" `elem` args then do
         outputSack <- return $ solveKnapSackBrute inputSack
-        putStrLn $ if outputSack == [] then "False" else show outputSack
+        putStrLn $ show outputSack
     else if "-o" `elem` args then do
         outputSack <- return $ solveKnapSackGA inputSack
-        putStrLn $ if outputSack == [] then "False" else show outputSack
+        putStrLn $ show outputSack
     else do
         putStrLn "No option specified"
 
