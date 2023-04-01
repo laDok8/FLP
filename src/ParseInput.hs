@@ -85,5 +85,5 @@ parseItems = do
 getKnapsackProblem :: String -> SackInput
 getKnapsackProblem input = case parse knapsackParser "" input of
 --print only string "fuck" if error no stacktrace
-  Left err -> errorWithoutStackTrace $ "Unable to parse input\nError: " ++ show err
+  Left err -> error $ "Unable to parse input\nError: " ++ show err
   Right val -> val
