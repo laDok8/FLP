@@ -1,10 +1,18 @@
+{-
+FLP Project 1: Knapsack Problem
+Author: Ladislav Dokoupil
+Login: xdokou14
+Year: 2023
+-}
+
 module Types
 ( SackItem(..)
 , SackInput(..)
 ) where
 
--- input data
+-- input file Item
 data SackItem = SackItem { weight :: Int, cost :: Int } deriving (Eq, Ord)
+-- parsed Input file
 data SackInput = SackInput { maxWeight :: Int, minCost :: Int, its :: [SackItem] } deriving (Eq, Ord)
 
 instance Show SackItem where

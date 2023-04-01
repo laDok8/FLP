@@ -1,3 +1,10 @@
+{-
+FLP Project 1: Knapsack Problem
+Author: Ladislav Dokoupil
+Login: xdokou14
+Year: 2023
+-}
+
 module ParseInput
  ( getKnapsackProblem
  ) where
@@ -5,11 +12,13 @@ module ParseInput
 import Types
 import Text.Parsec
 
+-- "macro" to eat spaces and newlines
 eol :: Parsec String () ()
 eol = do
     _ <- char '\n'
     spaces
 
+-- root parser
 knapsackParser :: Parsec String () SackInput
 knapsackParser = do
   _ <- string "Knapsack {"

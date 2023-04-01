@@ -1,3 +1,10 @@
+{-
+FLP Project 1: Knapsack Problem
+Author: Ladislav Dokoupil
+Login: xdokou14
+Year: 2023
+-}
+
 module Minimize
 ( solveKnapSackBrute
 , solveKnapSackGA
@@ -7,12 +14,13 @@ import qualified Data.List as List
 import System.Random
 import Types
 
---brute force solution for reference
+--interface for brute force solution
 solveKnapSackBrute :: SackInput -> [Int]
 solveKnapSackBrute inps@(SackInput maxW minC items) = let
     solved = solveKnapSack inps [] 0
     in if (fitness items solved maxW) < minC then [] else solved
 
+--brute force solution
 solveKnapSack :: SackInput -> [Int] -> Int -> [Int]
 solveKnapSack (SackInput _ _ []) curItems _ = curItems
 solveKnapSack (SackInput maxW minC (x:xs)) curItems cur_weight
@@ -23,7 +31,7 @@ solveKnapSack (SackInput maxW minC (x:xs)) curItems cur_weight
           if (sum s1) > (sum s2) then s1 else s2
 
 
---solution using genetic algorithm
+--solution using genetic algorithm ↓↓
 
 -- Create a random genome of given length
 createGenome :: Int -> Int -> [Int]
@@ -34,12 +42,11 @@ createPopulation :: Int -> Int -> [[Int]]
 createPopulation len size = map (\g -> createGenome len g) [1..size]
 
 
--- Calculate the fitness of a genome based on the total weight and cost of the items it includes
+-- Calculate the fitness of a genome
 fitness :: (Eq a, Num a) => [SackItem] -> [a] -> Int -> Int
 fitness items genome maximWeight =
   let (totalWeight, totalCost) = foldl (\(w, c) (SackItem w' c', g) -> if g == 1 then (w+w', c+c') else (w, c)) (0, 0) (zip items genome)
   in if totalWeight > maximWeight then 0 else totalCost
-
 
 
 -- Select two genomes from the population using roulette wheel selection
@@ -53,7 +60,7 @@ rouletteWheelSelection populationWithFitness gen0 = let
     parent2 = fst $ head $ dropWhile (\(_, accFitness) -> accFitness < parent2Index) wheel
     in (parent1, parent2, gen2)
 
--- iterate over all bits and mutate them with a given probability
+-- Iterate over all bits and mutate them with a given probability
 mutate ::RandomGen a => [Int] -> Float -> a -> ([Int],a)
 mutate genome mutRate gen0 = let
     (mutatedGenome, gen2) = foldl (\(g, gen) bit -> let
@@ -77,8 +84,7 @@ crossover parent1 parent2 crRate mrRate gen0 = let
     in if crossoverRate < crRate then [mutatedChildren1, mutatedChildren2] else [parent1, parent2]
 
 
---using cur generation as seed
--- Evolve the population for a given number of generations
+-- Evolve the population for a given number of generations using cur generation as seed
 evolvePopulation :: [SackItem] -> [[Int]] -> Int -> Int -> Int -> Float -> Float -> [[Int]]
 evolvePopulation items population maximWeight generation eliteCount crossoverRate mutationRate = let
     populationWithFitness = map (\g -> (g, fitness items g maximWeight)) population
@@ -91,7 +97,7 @@ evolvePopulation items population maximWeight generation eliteCount crossoverRat
     in if generation == 0 then newPopulation else evolvePopulation items newPopulation maximWeight (generation - 1) eliteCount crossoverRate mutationRate
 
 
--- The main function
+-- Main function
 solveKnapSackGA :: SackInput -> [Int]
 solveKnapSackGA (SackInput maximWeight minimalCost items) = let
     populationSize = 30 -- must be div 2
