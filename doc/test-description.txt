@@ -1,0 +1,6 @@
+test01 - problem from assignment
+test02 - perfect fit + weird formating
+test03 - weightless item
+test04 - too heavy item
+test05 - lot of items
+test06 - empty sack
