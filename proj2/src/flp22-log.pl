@@ -5,6 +5,14 @@ Login: xdokou14
 Year: 2023
 */
 
+:- use_module(library(lists)).
+:- use_module(library(assoc)).
+:- use_module(library(clpfd)).
+:- use_module(library(apply)).
+
+
 main :-
-    writeln('FLP Project 2: Turing machine'),
-    halt.
+        read_line_to_codes(user_input, Input),
+        write(Input),
+        nl,
+        halt.
