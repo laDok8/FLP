@@ -6,7 +6,7 @@
 PROLOG = swipl
 TARGET = flp22-log
 FLAGS = -q -g main
-SRCS = $(wildcard *.pl)
+SRCS = $(wildcard src/*.pl)
 
 .PHONY: all clean zip
 
@@ -16,7 +16,7 @@ $(TARGET): $(SRCS)
 	$(PROLOG) $(FLAGS) -o $@ -c $^
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) $(TARGET).zip
 
-zip:
-	zip $(TARGET).zip $(SRCS) Makefile
+zip: Makefile $(SRCS) test/* doc/*
+	zip $(TARGET).zip $^
