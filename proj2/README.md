@@ -26,9 +26,9 @@ B a B b
 B b B R
 B c B a
 B c F c
-B c B a
-
+B c B a % <- duplicit !
 aaacaa
+
 Saaacaa
 Baaacaa
 Bbaacaa
