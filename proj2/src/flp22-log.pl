@@ -21,9 +21,11 @@ read_lines(Ls) :-
     read_lines(LLs), Ls = [L|LLs]).
 % ^^^ taken from labs
 
-process_lines([], _) :- fail.
-process_lines([L], L).
-process_lines([LL|LLs],Ret) :- process_line(LL), process_lines(LLs,Ret).
+process_lines_core([], _) :- fail.
+process_lines_core([L], L) :- !.
+process_lines_core([LL|LLs],Ret) :- process_line(LL), process_lines_core(LLs,Ret).
+%separation for fail if no states were defined
+process_lines([L|LLs], Ret) :- process_line(L), process_lines_core(LLs,Ret).
 
 
 :- dynamic state/4.
@@ -46,27 +48,50 @@ replace_nth0(Index, List, New, Result) :-
     nth0(Index, List, Old, Rest),
     nth0(Index, Result, New, Rest).
 
-% todo check end
-% generate 1 step State, Pos, Word
-makeStep(State, Pos, Word, NState, NPos, NWord) :-
+% generate 1 step (State, Pos, Word) -> (NState, NPos, NWord)
+
+:- dynamic was_here/3.
+make_step(State, Pos, Word, NState, NPos, NWord) :-
+    assert(was_here(State, Pos, Word)),
     nth0(Pos, Word, CurSymb),
     state(State, CurSymb, NState, NSymb),
+    %retractall(was_here(_, _, _)),
     (NSymb == 'R' -> 
         NPos is Pos + 1,NWord = Word;
         (NSymb == 'L' -> 
             NPos is Pos - 1; 
-            (NPos is Pos,replace_nth0(Pos, Word, NSymb, NWord),!
-    ))).
-%usage: makeStep('S', 0, [a,b,c], NState, NPos, NWord).
+            (NPos is Pos,replace_nth0(Pos, Word, NSymb, NWord)))),
+    not(was_here(NState, NPos, NWord)).
+
+% path as tuple
+make_steps('F', Pos, Word, Path) :- Path = (Word,'F',Pos),!.
+make_steps(State, Pos, Word, [(Word, State, Pos)|Path]) :-
+    make_step(State, Pos, Word, NState, NPos, NWord),
+    make_steps(NState, NPos, NWord, Path).
+
+
+
+
+%path: list of tuples (Word, State, Pos)
+print_path([]) :- nl,!.
+print_path((Word, State, Pos)) :- print_word(Word, State, Pos, 0),!.
+print_path([(Word, State, Pos)|Path]) :-
+    print_word(Word, State, Pos, 0),
+    print_path(Path).
 
 main :-
         % read stdin
         prompt(_, ''),
         read_lines(In),
         % process input -> assert States using dynamic predicate and returns Input State
-        dynamic(state/4),
-        process_lines(In, InpWord),
-        print_word(InpWord, 'S', 0, 0),
-        makeStep('S', 0, InpWord, NState, NPos, NWord),
-        print_word(NWord, NState, NPos, 0),!.
+        process_lines(In, InpWord),!,
+        % run turing machine
+
+
+
+        %trace,
+        make_steps('S', 0, InpWord, Path),
+        print_path(Path),!.
         
+% reconsult("src/flp22-log.pl"), see('test/test02.in'), 
+% print_path([([c, a], 'B', 0)|([c, a], 'F', 0)])

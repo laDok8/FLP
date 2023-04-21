@@ -1,0 +1,8 @@
+test01 - problem from assignment - accepting
+test02 - empty input - rejecting
+test03 - short input - rejecting
+test04 - short input - accepting
+test05 - lot of states - accepting
+test06 - lot of states - rejecting
+test07 - cycle - rejecting
+test08 - unbound cycle - rejecting

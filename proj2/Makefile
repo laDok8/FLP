@@ -7,6 +7,7 @@ PROLOG = swipl
 TARGET = flp22-log
 FLAGS = -q -g main
 SRCS = $(wildcard src/*.pl)
+PACK=flp-log-xdokou14.zip
 
 .PHONY: all clean zip run
 
@@ -18,11 +19,11 @@ $(TARGET): $(SRCS)
 #run on all inps 
 run:
 	@for i in test/*.in; do \
-		./$(TARGET) < $$i > $${i%.in}.out; \
+		./$(TARGET) < $$i > $${i%.in}.out || true  ; \
 	done
 
 clean:
-	rm -f $(TARGET) $(TARGET).zip
+	rm -f $(TARGET) $(PACK) test/*.out
 
-zip: Makefile $(SRCS) test/* doc/*
-	zip $(TARGET).zip $^
+zip: Makefile $(SRCS) test/*.in doc/*
+	zip $(PACK) $^
