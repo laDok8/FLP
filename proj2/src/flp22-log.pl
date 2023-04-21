@@ -24,7 +24,7 @@ read_lines(Ls) :-
 process_lines_core([], _) :- fail.
 process_lines_core([L], L) :- !.
 process_lines_core([LL|LLs],Ret) :- process_line(LL), process_lines_core(LLs,Ret).
-%separation for fail if no states were defined
+% separation to fail if no states were defined
 process_lines([L|LLs], Ret) :- process_line(L), process_lines_core(LLs,Ret).
 
 
@@ -48,15 +48,13 @@ replace_nth0(Index, List, New, Result) :-
     nth0(Index, List, Old, Rest),
     nth0(Index, Result, New, Rest).
 
-% generate 1 step (State, Pos, Word) -> (NState, NPos, NWord)
-
+% generate single step (State, Pos, Word) -> (NState, NPos, NWord)
 :- dynamic was_here/3.
 make_step(State, Pos, Word, NState, NPos, NWord) :-
     assert(was_here(State, Pos, Word)),
     nth0(Pos, Word, CurSymb),
     state(State, CurSymb, NState, NSymb),
-    %retractall(was_here(_, _, _)),
-    (NSymb == 'R' -> 
+    (NSymb == 'R' ->
         NPos is Pos + 1,NWord = Word;
         (NSymb == 'L' -> 
             NPos is Pos - 1; 
@@ -72,7 +70,7 @@ make_steps(State, Pos, Word, [(Word, State, Pos)|Path]) :-
 
 
 
-%path: list of tuples (Word, State, Pos)
+% path: list of tuples: [(Word, State, Pos)]
 print_path([]) :- nl,!.
 print_path((Word, State, Pos)) :- print_word(Word, State, Pos, 0),!.
 print_path([(Word, State, Pos)|Path]) :-
@@ -85,13 +83,5 @@ main :-
         read_lines(In),
         % process input -> assert States using dynamic predicate and returns Input State
         process_lines(In, InpWord),!,
-        % run turing machine
-
-
-
-        %trace,
         make_steps('S', 0, InpWord, Path),
         print_path(Path),!.
-        
-% reconsult("src/flp22-log.pl"), see('test/test02.in'), 
-% print_path([([c, a], 'B', 0)|([c, a], 'F', 0)])
