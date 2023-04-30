@@ -57,7 +57,7 @@ make_step(State, Pos, Word, NState, NPos, NWord) :-
     (NSymb == 'R' ->
         NPos is Pos + 1,NWord = Word;
         (NSymb == 'L' -> 
-            NPos is Pos - 1; 
+            NPos is Pos - 1,NWord = Word;
             (NPos is Pos,replace_nth0(Pos, Word, NSymb, NWord)))),
     not(was_here(NState, NPos, NWord)).
 

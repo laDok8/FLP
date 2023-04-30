@@ -6,3 +6,4 @@ test05 - lot of states - accepting
 test06 - lot of states - rejecting
 test07 - cycle - rejecting
 test08 - unbound cycle - rejecting
+test09 - long test - accepting
